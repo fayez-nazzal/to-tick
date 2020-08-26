@@ -13,6 +13,7 @@ moment.updateLocale('en', {
 export default () => {
   const [currentDate, setCurrentDate] = useState(moment())
   const [currenTime, setCurrentTime] = useState('00:00 AM')
+  const [isSpecefic, setIsSpecefic] = useState(true)
 
   const prevMonth = () => {
     const prevMonthDate = moment(currentDate).add('1', 'months')
@@ -28,8 +29,8 @@ export default () => {
     <div className="container">
       <div className="datetime-picker">
           <div className="mode-buttons">
-            <button className="due-button">Specefic</button>
-            <button className="duration-button">Duration</button>
+            <button className={isSpecefic? "mode-button selected":"mode-button"}>Specefic</button>
+            <button className={!isSpecefic? "mode-button selected":"mode-button"}>Duration</button>
           </div>
           
           <DatePicker currentDate={currentDate} prevMonth={prevMonth} nextMonth={nextMonth} setCurrentDate={setCurrentDate}/>

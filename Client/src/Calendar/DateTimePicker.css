@@ -6,7 +6,7 @@
     position: absolute;
     top: 23px;
     right: 90px;
-    background-color: whitesmoke;
+    background-color: #f2f2f2;
 }
 
 .mode-buttons {
@@ -15,16 +15,20 @@
     align-items: stretch;
 }
 
-.due-button, .duration-button {
+.mode-button {
     flex: 1 1 0px;
     border: none;
-    background: wheat;
+    background: #f2f2f2;
     padding: 8px;
     font-size: 14px;
 }
 
-.date-button:hover, .time-button:hover {
-    background-color: teal;
+.mode-button:hover {
+    background-color: #a1dd70;
+}
+
+.selected {
+    background-color: #a1dd70;
 }
 
 .month-nav {
@@ -68,11 +72,11 @@
 }
 
 .selected-day {
-    background: red !important;
+    background: #76BA1B !important;
 }
 
 .day:hover {
-    background-color: yellow;
+    background-color: rgba(204, 234, 187, 1);
 }
 
 h5 {
@@ -85,8 +89,15 @@ h5 {
     margin-top: 10px;
 }
 
+.reminder-entry select, input[type=time] {
+    height: 25px;
+    margin-top: 4px;
+    border: 2px solid rgba(204, 234, 187, 1);
+}
+
 .reminder-entry select {
     font-weight: 300;
+    background-color: white;
 }
 
 .action-buttons {
@@ -98,4 +109,10 @@ h5 {
 .clear-button, .ok-button {
     flex: 1 1 0px;
     padding: 5px;
+    border: none;
+    background-color: rgba(204, 234, 187, 1);
+}
+
+.clear-button:hover, .ok-button:hover {
+    background-color: #76BA1B;
 }
