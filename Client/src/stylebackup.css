@@ -1,0 +1,378 @@
+* {
+    font-family: 'Rubik', sans-serif;
+    outline: none;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    font-size: 18px;
+    overflow: auto;
+}
+
+
+body:not(input) {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.main-div {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+  
+::-webkit-scrollbar-track {
+    background: lightgrey;
+    border-radius: 10px;
+}
+  
+::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: rgba(168, 223, 101, 0.9);
+}
+
+.header {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    margin: 0;
+    background-color: #76BA1B;
+}
+
+h2, h4 {
+    font-family: 'Quicksand', sans-serif;
+    margin: 0;
+}
+
+h4 {
+    font-weight: 400;
+    padding: 10px 0 3px 0;
+}
+
+.logo {
+    padding: 3px;
+    color: white;
+    font-weight: 300;
+}
+
+.nav-todo-container, .form-list-container {
+    display: flex;
+    flex: 1 1 auto;
+}
+
+.nav-todo-container {
+    justify-content: space-between;
+    height: 90%;
+}
+
+.form-list-container {
+    flex-direction: column;
+    width: 77%;
+    height: 100%;
+}
+
+.navigation, .todo-list {
+    /* flex: 1 1 auto; */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(168, 223, 101, 0.9) lightgrey;
+    overflow-y: auto;
+}
+
+.todo-list {
+    display: flex;
+    flex-direction: column;
+    padding: 0 18px;
+}
+
+.navigation {
+    width: 23%;
+    align-items: unset;
+    background-color: #f8f9f7;
+    border-right: 2px ridge white;
+}
+
+.navigation-section-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navigation-label, .navigation-button {
+    margin: 7px 2px 8px 0;
+}
+
+.navigation-label {
+    margin-left: 5px;
+    padding: 0;
+    margin-bottom: 3px;
+}
+
+.navigation-add-button {
+    font-size: 18px;
+    border-radius: 5px;
+    padding: 0px 6px;
+    height: 50%;
+    margin: 0 6px;
+    border: none;
+    background-color: #B8DFA8;
+}
+
+.navigation-add-button:hover {
+    background-color: #64A64A;
+}
+
+.navigation-button {
+    display: block;
+    width: 100%;
+    height: 36px;
+    background-color: whitesmoke;
+    border: none;
+    margin: 3px auto;
+}
+  
+.navigation-button:hover {
+    background-color: #76BA1B40;
+}
+
+.todo-form {
+    text-align: center;
+    padding-bottom: 15px;
+}
+
+.todo-input {
+    font-size: 16px;
+    font-weight: 400;
+    width: 70%;
+    height: 33px;
+    border: 2px solid rgba(204, 234, 187, 0.8);
+    caret-color: darkslategray;
+    border-radius: 4px;
+    padding-left: 4px;
+    background-color: white;
+    box-sizing: border-box;
+}
+
+.todo-input:focus {
+    border: 2px solid #cceabb;
+}
+
+.dragging-over, .dragged-over {
+    background-color: #cceabb;
+}
+
+.dragging-over {
+    cursor: grabbing;
+}
+
+.dragged-over {
+    background-color: #cceabb;
+}
+
+.todo-item {
+    display: inline-flex;
+    font-size: 19px;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid lightgray;
+    padding: 5px 4px;
+    border-radius: 10px;
+    background-color: #fafafa;
+    cursor: default !important;
+    margin-bottom: 6px;
+}
+
+
+.todo-item-enter {
+    opacity: 0;
+  }
+
+.todo-item-enter-active {
+    opacity: 1;
+    transition: ease-in 100ms;
+}
+
+.todo-item-exit {
+    opacity: 1;
+}
+
+.todo-item-exit-active {
+    opacity: 0;
+    transition: ease-in 90ms;
+}
+
+input[type=checkbox]:checked + label {
+    text-decoration: line-through;
+    color: rgb(126, 161, 92);
+}
+
+.todo-item-label {
+    padding-left: 3px;
+}
+
+.todo-btn-container {
+    display:flex;
+    align-items: center;
+}
+
+.edit-btn, .delete-btn {
+    border-radius: 30px;
+    border: none;
+}
+
+.delete-btn {
+    background-color: #d3262680;
+    padding: 1px 6px 2px 6px;
+}
+
+.edit-btn {
+    background-color: #37c2ab80;
+    padding: 0 3px 1px 3px;
+}
+
+.delete-btn:hover {
+    background-color: #d32626;
+}
+
+.edit-btn:hover {
+    background-color: #37c2ab;
+}
+
+.todo-hidden {
+    opacity: 0;
+    animation: fadeOut 130ms;
+}
+
+.todo-fully-hidden {
+    display: none !important;
+}
+  
+.on-input {
+    background-color: #cceabb;
+}
+
+/* for login page */
+
+.login-page-container {
+    display: flex;
+    flex-direction: column;
+    background-color: #fafafa;
+    border: 2px solid rgba(204, 234, 187, 0.5);
+    align-self: center;
+    position: absolute;
+    border: 1px solid grey;
+    bottom: 50%;
+    padding: 0 20px 10px 20px;
+    width: 36%;
+    -ms-transform: translateY(50%);
+    transform: translateY(50%);
+}
+
+.login-form {
+    text-align: center;
+}
+
+.login-line{
+    display:block; 
+    margin: -5px 0 25px 0;
+}
+
+.login-line h3{
+    font-size:15px; 
+    color: #838383;
+    text-align:center; 
+    border-bottom: 2px ridge white; 
+    position:relative; 
+}
+
+.login-line h3 span { 
+    background-color: #fafafa; 
+    position: relative; 
+    top: 10px; 
+    padding: 0 10px;
+}
+
+.login-oauth-box {
+    padding: 0 5px 20px 5px;;
+}
+
+
+
+.login-input {
+    font-size: 16px;
+    font-weight: 400;
+    width: 100%;
+    margin-top: 7px;
+    border: 1px solid grey;
+    height: 34px;
+    caret-color: darkslategray;
+    border-radius: 4px;
+    padding-left: 4px;
+    background-color: white;
+    box-sizing: border-box;
+}
+
+.login-header-nav {
+    display: flex;
+    align-items: stretch;
+}
+
+
+.header-login, .header-register {
+    display: flex;
+    font-family: Rubik;
+    font-weight: 500;
+    border-bottom: 5px solid #00000000;
+    cursor: pointer;
+}
+
+.header-login:hover, .header-register:hover {
+    border-color: white;
+    background-color: #81b214;
+}
+
+
+.header-login:active, .header-register:active {
+    background-color: #bfdcae;
+}
+
+.header-link {
+    padding: 0 7px 0 5px;
+    margin: auto;
+    color: white;
+    margin-top: 10px;
+    text-decoration: none;
+}
+
+@media only screen and (max-width: 660px) {
+    .navigation {
+        transition: 300ms;
+        width: 0;
+    }
+
+    .form-list-container {
+        width: 100%
+    }
+}
+
+@keyframes fadeOut {
+    from {opacity: 1;}
+    to {opacity: 0;}
+}
+
+@keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}

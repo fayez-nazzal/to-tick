@@ -1,0 +1,101 @@
+.container {
+    position: relative;
+}
+
+.datetime-picker {
+    position: absolute;
+    top: 23px;
+    right: 90px;
+    background-color: whitesmoke;
+}
+
+.mode-buttons {
+    display: flex;
+    justify-items: stretch;
+    align-items: stretch;
+}
+
+.due-button, .duration-button {
+    flex: 1 1 0px;
+    border: none;
+    background: wheat;
+    padding: 8px;
+    font-size: 14px;
+}
+
+.date-button:hover, .time-button:hover {
+    background-color: teal;
+}
+
+.month-nav {
+    display: flex;
+    justify-content: stretch;
+    align-items: center;
+}
+
+.month-year {
+    flex-grow: 1;
+    position: relative;
+    bottom: 3px;
+}
+
+.nav-button {
+    border: 3px solid transparent;
+    border-radius: 20px;
+    text-align: center;
+    height: 50%;
+}
+
+
+.nav-button:hover {
+    background-color: red;
+}
+
+.day-name {
+    width: 28px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.day {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 300;
+}
+
+.shadow-day {
+    color: rgba(0,0,0,0.65)
+}
+
+.selected-day {
+    background: red !important;
+}
+
+.day:hover {
+    background-color: yellow;
+}
+
+h5 {
+    margin: 2px 0 -2px 0 ;
+    font-weight: 300;
+    font-size: 14px;
+}
+
+.reminder-entry {
+    margin-top: 10px;
+}
+
+.reminder-entry select {
+    font-weight: 300;
+}
+
+.action-buttons {
+    display: flex;
+    justify-items: stretch;
+    margin-top: 10px;
+}
+
+.clear-button, .ok-button {
+    flex: 1 1 0px;
+    padding: 5px;
+}
