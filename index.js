@@ -38,7 +38,7 @@ app.use(passport.session())
 const passportSetup = require('./config/passport-setup')
 
 
-mongoose.connect("mongodb://localhost:27017/ttick")
+mongoose.connect("mongodb+srv://fayez:1710@ttick.sh9jm.mongodb.net/<dbname>?retryWrites=true&w=majority")
   .then(() => console.log(`Database connected successfully`))
   .catch(err => console.log(err));
 

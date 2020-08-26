@@ -98,10 +98,12 @@ h4 {
 }
 
 .navigation {
-    width: 23%;
+    width: 21%;
     align-items: unset;
-    background-color: #f8f9f7;
-    border-right: 2px ridge white;
+    background-color: #f6f7ff;
+    border-right: 1px solid #e5e5e5;
+    /* background-color: #f6f6ff; */
+    /* background-color: #f7f7ee80; */
 }
 
 .navigation-section-container {
@@ -127,11 +129,11 @@ h4 {
     height: 50%;
     margin: 0 6px;
     border: none;
-    background-color: #B8DFA8;
+    background-color: #76BA1B70;
 }
 
 .navigation-add-button:hover {
-    background-color: #64A64A;
+    background-color: #76BA1B;
 }
 
 .navigation-button {
@@ -144,7 +146,7 @@ h4 {
 }
   
 .navigation-button:hover {
-    background-color: #76BA1B40;
+    background-color: #76BA1B50;
 }
 
 .todo-timeline {
@@ -154,9 +156,24 @@ h4 {
 .todo-timeline-button {
     white-space: wrap;
     flex: 1;
-    background-color: whitesmoke;
+    background-color: #f6f7ff;
+    border-bottom: 1px solid #e5e5e5;
     padding: 10px;
     text-align: center;
+}
+
+.todo-timeline-button:hover {
+    background-color: #76BA1B58;
+}
+
+.selected {
+    background-color: #76BA1B88;
+}
+
+.first-timeline-button {
+    border-left: 1px solid #f6f7ff;
+    box-sizing: border-box;
+    margin-left: -1px;
 }
 
 .todo-priorities {
@@ -168,12 +185,12 @@ h4 {
 
 .todo-priorities div:hover {
     margin-top: -13px;
-    font-size: 11px;
+    font-size: 12px;
 }
 
 .todo-priority-all, .todo-priority-veryhigh, .todo-priority-high, .todo-priority-medium, .todo-priority-low {
     flex: 1 1 0px;
-    padding: 3px;
+    padding: 4px;
 }
 
 .todo-priority-all {

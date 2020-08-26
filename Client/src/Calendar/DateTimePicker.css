@@ -116,3 +116,7 @@ h5 {
 .clear-button:hover, .ok-button:hover {
     background-color: #76BA1B;
 }
+
+input[type="time"]::-webkit-calendar-picker-indicator {
+    background: none;
+}

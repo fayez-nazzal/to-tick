@@ -9,7 +9,6 @@ export default (props) => {
                 <h5>time</h5>
                 <input name="time" type="time"
                     onChange={event=>{props.setCurrentTime(event.target.value);console.log(event.target.value)}}
-                    pattern='[0-9]{4}-[0-1][0-9]-[0-3][0-9] (1[012]|0?[1-9]):[0-5][0-9] (am|pm|AM|PM)'
                     value={props.currentTime}
                      />
             </div>

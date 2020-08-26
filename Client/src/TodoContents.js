@@ -6,7 +6,7 @@ export default (props) => {
     return (
         <>
             <div className="todo-timeline">
-                <div className="todo-timeline-button">All</div>
+                <div className="todo-timeline-button first-timeline-button selected">All</div>
                 <div className="todo-timeline-button">Today</div>
                 <div className="todo-timeline-button">Tomorrow</div>
                 <div className="todo-timeline-button">Next Week</div>
