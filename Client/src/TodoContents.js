@@ -1,16 +1,54 @@
-import React from 'react'
+import React, { useState } from 'react'
 import TodoForm from './TodoForm'
 import TodoList from './TodoList'
+import moment from 'moment'
 
 export default (props) => {
+    const [filteredTodos, setFilteredTodos] = useState(props.todos)
+
+    const filterTodos = (filterWith) => {
+        const todos = []
+        switch(filterWith) {
+            case 'All':
+                setFilteredTodos(props.todos)
+                break;
+            case 'Today':
+                for (let i=0; i<props.todos.length; i++)
+                    if (moment(props.todos[i].due).isSame(moment(), 'day'))
+                        todos.push()
+            case 'Tomorrow':
+                for (let i=0; i<props.todos.length; i++)
+                    if (moment(props.todos[i].due).isSame(moment().add(1, 'days'), 'day'))
+                        todos.push()
+            case 'Next 7 days':
+                for (let i=0; i<props.todos.length; i++)
+                    if (moment(props.todos[i].due) < moment().add(7, 'days'))
+                        todos.push()
+        }
+    }
+
     return (
         <>
             <div className="todo-timeline">
-                <div className="todo-timeline-button first-timeline-button selected">All</div>
-                <div className="todo-timeline-button">Today</div>
-                <div className="todo-timeline-button">Tomorrow</div>
-                <div className="todo-timeline-button">Next Week</div>
-                <div className="todo-timeline-button">Later</div>
+                <div className="todo-timeline-button first-timeline-button selected"
+                    onClick={() => filterTodos('All')}>
+                    All
+                </div>
+                <div className="todo-timeline-button"
+                    onClick={filterTodos('Today')}>
+                    Today
+                </div>
+                <div className="todo-timeline-button"
+                    onClick={() => filterTodos('Tomorrow')}>
+                    Tomorrow
+                </div>
+                <div className="todo-timeline-button"
+                    onClick={() => filterTodos('Next 7 days')}>
+                    Next 7 days
+                </div>
+                <div className="todo-timeline-button todo-timeline-plus-button">
+                +
+                </div>
             </div>
 
             <TodoForm 
