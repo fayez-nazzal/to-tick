@@ -9,7 +9,7 @@ import {Link, Switch, Route, Redirect} from 'react-router-dom'
 function HomePage() {
     const {loading, todos, setTodos, addTodo, editTodo, deleteTodoByIndex, toggleTodoChecked} = useTodos()
     const [groups, setGroups] = useState(["Today Tasks", "Plans"])
-    const [inputText, setInputText] = useState('')
+    const [inputText, setInputText] = useState('hh')
     const [currentTodoOnInput, setCurrentTodoOnInput] = useState({})
     const [loggedIn, setLoggedIn] = useState(false)
     let todoFormInput = null

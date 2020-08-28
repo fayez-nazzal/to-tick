@@ -3,6 +3,7 @@ import { Droppable } from 'react-beautiful-dnd'
 import planner from './png/planner.png'
 import menu from './png/menu.png'
 import DatePicker from './Calendar/DateTimePicker'
+import InputRegion from './InputRegion'
 
 export default React.forwardRef((props, ref) => {
     const [isFocus, setIsFocus] = useState(false)
@@ -26,22 +27,16 @@ export default React.forwardRef((props, ref) => {
                             <div
                                 ref = {provided.innerRef}
                                 {...provided.droppableProps}>
-                                    <input
-                                        ref={props.inputRef}
-                                        className="todo-input"
-                                        type="text"
-                                        autoComplete="off"
-                                        placeholder="Add a task"
-                                        value={props.inputText}
-                                        onChange={(event) => props.handleInputChange(event)}
-                                        onBlur={(event) => {
-                                            setIsFocus(prevValue => !prevValue)
-                                            props.handleBlur(event)
-                                        }}
-                                        onFocus={() => setIsFocus(prevValue => !prevValue)}
-                                        / >
+                                    < InputRegion
+                                        inputText={props.inputText}
+                                        inputRef={props.inputRef}
+                                        handleInputChange={props.handleInputChange}
+                                        setIsFocus={setIsFocus}
+                                        handleBlur={props.handleBlur}
+                                        isFocus={isFocus}
+                                    />
                                         
-                                        <div style={{position: 'relative', marginBottom: '-10px'}}>
+                                        {/* <div style={{position: 'relative', marginBottom: '-10px'}}>
                                             <img
                                             src={planner} 
                                             className={isFocus? 'todo-input-due-icon':'todo-input-due-icon-hidden'}
@@ -50,7 +45,7 @@ export default React.forwardRef((props, ref) => {
                                             <img src={menu} className={isFocus? 'todo-input-menu-icon':'todo-input-menu-icon-hidden'}/>
                                         </div>
                                         
-                                        <DatePicker className="date-picker" />
+                                        <DatePicker className="date-picker" /> */}
                                         
                                         <div style={{display: 'none'}}>{provided.placeholder}</div>
                                 </ div>
