@@ -5,13 +5,21 @@
     font-weight: 400;
     width: 70%;
     padding-left: 3px;
-    height: 32px;
-    border: 2px solid rgba(204, 234, 187, 0.8);
-    caret-color: darkslategray;
+    height: auto;
+    border: 2px solid #cceabbcc;
     border-radius: 4px;
     background-color: white;
     box-sizing: border-box;
-    transition: height 240ms, padding 300ms;
+    transition: height 180ms, padding 100ms;
+    word-wrap: break-word;
+    padding-bottom: 31px;
+}
+
+.input-region-focus {
+    border: 2px solid #cceabb;
+    height: auto;
+    padding-bottom: 50px;
+    transition: all 180ms, padding 80ms;
 }
 
 .input-region-invisible {
@@ -24,16 +32,11 @@
 .input-region-invisible-focus {
     position: relative;
     background-color: red;
-    top: -51px;
-    height: 48px;
+    top: -48px;
+    height: auto;
+    padding-bottom: 50px;
 }
 
-.input-region-focus {
-    border: 2px solid #cceabb;
-    height: 48px;
-    padding-bottom: 20px;
-    transition: all 220ms, padding 100ms;
-}
 
 .transparent-input {
     position: absolute;
@@ -43,16 +46,16 @@
     font-size: 16px;
     background-color: blueviolet;
     padding-top: 2px;
+    padding-bottom: 31px;
     top: 0;
     left: 0;
-    height: 22px;
     width: 98.8%;
     resize: none;
 }
 
 .transparent-input-focus {
     top: 0;
-    height: 38px;
+    padding-bottom: 50px;
     background-color: blue;
 }
 

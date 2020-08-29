@@ -220,6 +220,13 @@ h4 {
 
 .todo-form {
     text-align: center;
+    margin-bottom: -15px;
+    transition: all 170ms;
+}
+
+.todo-form:focus-within {
+    margin-bottom: -28px;
+    transition: all 170ms;
 }
 
 .todo-form-child {

@@ -16,6 +16,10 @@ function InputRegion(props) {
     const [caretIndex, setCaretIndex] = useState(0)
     const [isAllHighlighted, setIsAllHighlighted] = useState(false)
     const caretRef = useRef(null)
+    const mainInputRegion = useRef(null)
+    const invisibleInputRegion = useRef(null)
+    const [inputRegionHeight, setInputRegionHeight] = useState()
+
 
     useEffect(()=>{
             setInterval(()=>{
@@ -32,25 +36,29 @@ function InputRegion(props) {
 
     const onInput = (value) => {
         const newArray = [...inputTextArray]
-        const index = caretPos === value.length-1? caretPos:caretPos
-        if (!isBackSpacePressed) {
+        let index = caretPos === value.length-1? caretPos:caretPos
+        if (!isBackSpacePressed && !isAllHighlighted) {
             const char = value.charAt(caretPos)
             newArray.splice(index, 0, char)
             setCaretPos(prev => prev+1)
+        } else if (!isBackSpacePressed && isAllHighlighted) {
+            newArray.length = 0
+            newArray.splice(0, 0, value.charAt(0))
+            setIsAllHighlighted(false)
+            index = 0
+            setCaretPos(1)
+        } else if (isBackSpacePressed && !isAllHighlighted) {
+            newArray.splice(index, 1)
+        } else {
+            setCaretPos(0)
+            newArray.length = 0
         }
-        else {
-            if (isAllHighlighted) {
-                newArray.length = 0
-            }
-            else
-                newArray.splice(index, 1)
-
-            isBackSpacePressed = false
-        }
-        caretRef.current.parentNode.insertBefore(caretRef.current, caretRef.current.parentNode.childNodes[caretRef.current.parentNode.childNodes.length - 1])
-        setInputTextArray([...newArray])
+        setInputTextArray(newArray)
         setInputText(value)
+        isBackSpacePressed = false
+        caretRef.current.parentNode.insertBefore(caretRef.current, caretRef.current.parentNode.childNodes[caretRef.current.parentNode.childNodes.length - 1])
         persistCaretTemporarily(true)
+        console.log((value.match(/[^\r\n]+/g)).length)
     }
 
 
@@ -87,7 +95,7 @@ function InputRegion(props) {
         clearTimeout(blinkTimeout)
         blinkTimeout = setTimeout(()=>{
             blinkCaret = true
-        }, 230)
+        }, 70)
     }
 
     const moveCaret = (index, right=false) => {
@@ -103,7 +111,13 @@ function InputRegion(props) {
 
     const handleKeyDown = (event) => {
         let index = event.target.selectionStart
-        if (event.keyCode === 37 && caretPos > 0) {
+        if (event.keyCode === 8 && caretPos > 0) {
+            moveCaret(index-1)
+            console.log('pressed bkp')
+            isBackSpacePressed = true
+            if (isAllHighlighted)
+                onInput('')
+        } else if (event.keyCode === 37 && caretPos > 0) {
             moveCaret(index-1)
         }
         else if (event.keyCode === 39 && caretPos < inputText.length) {
@@ -111,25 +125,24 @@ function InputRegion(props) {
         }
         else if (event.keyCode === 13) {
             event.preventDefault()
-        } else if (event.keyCode === 8 && caretPos > 0) {
-            moveCaret(index-1)
-            isBackSpacePressed = true
         }
     }
 
     return (
         <>
         <div
-            className={getRegionClassNames()}>
+            className={getRegionClassNames()}
+            ref={mainInputRegion}>
         </div>
         <div
             className={getInvisibleRegionClassNames() + ' input-region-invisible'}
-            onChange={(e) => onInput(e.target.value)}>
+            onChange={(e) => onInput(e.target.value)}
+            ref={invisibleInputRegion}>
             {inputTextArray.map((elem, index) => 
-                <span style={{visibility: 'visible', whiteSpace: 'pre', backgroundColor:isAllHighlighted? '#7DBC00':''}} key={index}>{elem}</span>
+                <span style={{ visibility: 'visible', whiteSpace: 'pre', backgroundColor:isAllHighlighted? '#7DBC00':''}} key={index}>{elem}</span>
             )}
             <img
-                style={{opacity: caretVisible? 1:0}}
+                style={{opacity: caretVisible&&props.isFocus? 1:0}}
                 className={getCaretClassNames()}
                 ref={caretRef} />
             <textarea
@@ -156,7 +169,9 @@ function InputRegion(props) {
                 }}
                 onPaste={e => e.preventDefault()}
                 onDoubleClick={e => {e.target.setSelectionRange(0, inputTextArray.length)
-                                    setIsAllHighlighted(true)}}
+                                    setIsAllHighlighted(true)
+                                    moveCaret(inputTextArray.length+1)
+                                }}
                 onKeyDown={(e) => handleKeyDown(e)}
                 />
             </div>
