@@ -3,6 +3,7 @@ import './inputRegion.css'
 
 let blinkCaret = true
 let blinkTimeout
+let isBackSpacePressed
 
 function InputRegion(props) {
     const [inputText, setInputText] = useState('')
@@ -32,12 +33,24 @@ function InputRegion(props) {
     const onInput = (value) => {
         const newArray = [...inputTextArray]
         const index = caretPos === value.length-1? caretPos:caretPos
-        const char = value.charAt(caretPos)
-        setCaretPos(prev => prev+1)
-        newArray.splice(index, 0, char)
+        if (!isBackSpacePressed) {
+            const char = value.charAt(caretPos)
+            newArray.splice(index, 0, char)
+            setCaretPos(prev => prev+1)
+        }
+        else {
+            if (isAllHighlighted) {
+                newArray.length = 0
+            }
+            else
+                newArray.splice(index, 1)
+
+            isBackSpacePressed = false
+        }
         caretRef.current.parentNode.insertBefore(caretRef.current, caretRef.current.parentNode.childNodes[caretRef.current.parentNode.childNodes.length - 1])
         setInputTextArray([...newArray])
         setInputText(value)
+        persistCaretTemporarily(true)
     }
 
 
@@ -67,9 +80,9 @@ function InputRegion(props) {
         return props.isFocus? 'caret caret-focus':'caret'
     }
 
-    const hideCaretTemporarily = () => {
+    const persistCaretTemporarily = (show) => {
         blinkCaret = false
-        setCaretVisible(false)
+        setCaretVisible(show? true:false)
 
         clearTimeout(blinkTimeout)
         blinkTimeout = setTimeout(()=>{
@@ -84,12 +97,23 @@ function InputRegion(props) {
         setCaretPos(index)
     }
 
-    const moveCaretWithArrowKeys = (keyCode, index) => {
-        if (keyCode == '37') {
+    useEffect(()=>{
+        console.log(caretPos)
+    }, [caretPos])
+
+    const handleKeyDown = (event) => {
+        let index = event.target.selectionStart
+        if (event.keyCode === 37 && caretPos > 0) {
             moveCaret(index-1)
         }
-        else if (keyCode == '39') {
+        else if (event.keyCode === 39 && caretPos < inputText.length) {
             moveCaret(index+1, true)
+        }
+        else if (event.keyCode === 13) {
+            event.preventDefault()
+        } else if (event.keyCode === 8 && caretPos > 0) {
+            moveCaret(index-1)
+            isBackSpacePressed = true
         }
     }
 
@@ -102,13 +126,12 @@ function InputRegion(props) {
             className={getInvisibleRegionClassNames() + ' input-region-invisible'}
             onChange={(e) => onInput(e.target.value)}>
             {inputTextArray.map((elem, index) => 
-                <span style={{visibility: 'visible', whiteSpace: 'pre', backgroundColor:isAllHighlighted? 'green':''}} key={index}>{elem}</span>
+                <span style={{visibility: 'visible', whiteSpace: 'pre', backgroundColor:isAllHighlighted? '#7DBC00':''}} key={index}>{elem}</span>
             )}
             <img
                 style={{opacity: caretVisible? 1:0}}
                 className={getCaretClassNames()}
-                ref={caretRef}
-                />
+                ref={caretRef} />
             <textarea
                 type="text"
                 autoComplete="off"
@@ -120,20 +143,21 @@ function InputRegion(props) {
                 onBlur={(event) => {
                     props.setIsFocus(false)
                     props.handleBlur(event)
-                    hideCaretTemporarily()
+                    persistCaretTemporarily(false)
                 }}
                 autoFocus={true}
                 onFocus={() => {
                     props.setIsFocus(true)
-                    hideCaretTemporarily()
+                    persistCaretTemporarily(false)
                 }}
                 onClick={(e) => {
                     moveCaret(e.target.selectionStart, true)
                     setIsAllHighlighted(false)
                 }}
+                onPaste={e => e.preventDefault()}
                 onDoubleClick={e => {e.target.setSelectionRange(0, inputTextArray.length)
                                     setIsAllHighlighted(true)}}
-                onKeyDown={(e) => moveCaretWithArrowKeys(e.keyCode, e.target.selectionStart)}
+                onKeyDown={(e) => handleKeyDown(e)}
                 />
             </div>
         </>
