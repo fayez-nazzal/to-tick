@@ -1,62 +1,15 @@
+
 .input-region {
-    margin: auto;
-    text-align: left;
-    font-size: 16px;
-    font-weight: 400;
-    width: 70%;
-    padding-left: 3px;
-    height: auto;
-    border: 2px solid #cceabbcc;
-    border-radius: 4px;
-    background-color: white;
-    box-sizing: border-box;
-    transition: height 180ms, padding 100ms;
-    word-wrap: break-word;
-    padding-bottom: 31px;
-}
-
-.input-region-focus {
-    border: 2px solid #cceabb;
-    height: auto;
-    padding-bottom: 50px;
-    transition: all 180ms, padding 80ms;
-}
-
-.input-region-invisible {
-    position: relative;
-    visibility: hidden;
-    background-color: red;
-    top: -32px;
-}
-
-.input-region-invisible-focus {
-    position: relative;
-    background-color: red;
-    top: -48px;
-    height: auto;
-    padding-bottom: 50px;
-}
-
-
-.transparent-input {
-    position: absolute;
-    visibility: visible;
-    cursor: text;
-    opacity: 0;
-    font-size: 16px;
-    background-color: blueviolet;
-    padding-top: 2px;
-    padding-bottom: 31px;
-    top: 0;
-    left: 0;
-    width: 98.8%;
-    resize: none;
-}
-
-.transparent-input-focus {
-    top: 0;
-    padding-bottom: 50px;
+    padding: 100px;
     background-color: blue;
+}
+
+.hh {
+    background-color: green;
+}
+
+.input-region:focus {
+    background-color: brown;
 }
 
 .caret {

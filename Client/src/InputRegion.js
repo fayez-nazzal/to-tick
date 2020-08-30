@@ -1,13 +1,13 @@
 import React, {useState, useEffect, useRef} from 'react'
 import './inputRegion.css'
 
-let blinkCaret = true
-let blinkTimeout
-let isBackSpacePressed
+const keyCodeObj = {
+
+}
 
 function InputRegion(props) {
     const [inputText, setInputText] = useState('')
-    const [inputTextArray, setInputTextArray] = useState([])
+    const [inputTextArray, setInputTextArray] = useState([''])
     const [caretBlink, setCaretBlink] = useState(true)
     const [caretVisible, setCaretVisible] = useState(true)
     const [caretPos, setCaretPos] = useState(0)
@@ -16,125 +16,141 @@ function InputRegion(props) {
     const [caretIndex, setCaretIndex] = useState(0)
     const [isAllHighlighted, setIsAllHighlighted] = useState(false)
     const caretRef = useRef(null)
-    const mainInputRegion = useRef(null)
+    const inputRegionRef = useRef(null)
     const invisibleInputRegion = useRef(null)
     const [inputRegionHeight, setInputRegionHeight] = useState()
-
+    const [lastSpanText, setLastSpanText] = useState('')
+    const [isLastSpanRich, setIsLastSpanRich] = useState(false)
 
     useEffect(()=>{
-            setInterval(()=>{
-                if (blinkCaret)
-                    setCaretVisible(prev => !prev)
-            }, 500)
+        inputRegionRef.current.focus()
+    })
 
-        // TODO make clear when input disappears (like going to settings page)
-    }, [])
-
-    useEffect(()=> {
-        caretRef.current.parentNode.insertBefore(caretRef.current, caretRef.current.parentNode.childNodes[caretPos])
-    }, [inputTextArray, caretPos])
-
-    const onInput = (value) => {
-        const newArray = [...inputTextArray]
-        let index = caretPos === value.length-1? caretPos:caretPos
-        if (!isBackSpacePressed && !isAllHighlighted) {
-            const char = value.charAt(caretPos)
-            newArray.splice(index, 0, char)
-            setCaretPos(prev => prev+1)
-        } else if (!isBackSpacePressed && isAllHighlighted) {
-            newArray.length = 0
-            newArray.splice(0, 0, value.charAt(0))
-            setIsAllHighlighted(false)
-            index = 0
-            setCaretPos(1)
-        } else if (isBackSpacePressed && !isAllHighlighted) {
-            newArray.splice(index, 1)
+    const dispatchForCode = (event, callback) => {
+        let code
+      
+        if (event.key === undefined) {
+            code = event.key
         } else {
-            setCaretPos(0)
-            newArray.length = 0
+            code = event.keyCode? event.keyCode: event.which
+            code = String.fromCharCode(code)
+        }
+        
+        return code === "Shift"? null:
+                                callback(code)
+    }
+
+    const getChar = (keyPressed, shiftKey) => {
+        console.log(keyPressed)
+    }
+
+    const writeChar = (code) => {
+        const newArray = [...inputTextArray]
+        const index = newArray.length - 1
+        const newText = lastSpanText + code
+        if (!newText.endsWith('map')) {
+            newArray[index] = <span>{newText}</span>
+            setLastSpanText(newText)
+        } else {
+            newArray[index] = <span>{newText.slice(0, -3)}</span>
+            newArray.push(<span className="hh">{newText.slice(-3)}</span>)
+            newArray.push('')
+            setLastSpanText('')
         }
         setInputTextArray(newArray)
-        setInputText(value)
-        isBackSpacePressed = false
-        caretRef.current.parentNode.insertBefore(caretRef.current, caretRef.current.parentNode.childNodes[caretRef.current.parentNode.childNodes.length - 1])
-        persistCaretTemporarily(true)
-        console.log((value.match(/[^\r\n]+/g)).length)
     }
 
+    
+    // useEffect(()=>{
+    //         setInterval(()=>{
+    //             if (blinkCaret)
+    //                 setCaretVisible(prev => !prev)
+    //         }, 500)
 
-    const getRegionClassNames = () => {
-        if (props.isFocus) {
-            return 'input-region input-region-focus'
-        }
-        else {
-            return 'input-region'
-        }
-    }
+    //     // TODO make clear when input disappears (like going to settings page)
+    // }, [])
 
-    const getInvisibleRegionClassNames = () => {
-        if (props.isFocus) {
-            return 'input-region input-region-invisible-focus'
-        }
-        else {
-            return 'input-region input-region-invisible'
-        }
-    }
+    // useEffect(()=> {
+    //     caretRef.current.parentNode.insertBefore(caretRef.current, caretRef.current.parentNode.childNodes[caretPos])
+    // }, [inputTextArray, caretPos])
 
-    const getInputClassName = () => {
-        return props.isFocus? 'transparent-input transparent-input-focus':'transparent-input'
-    }
+    // const onInput = (value) => {
+    //     const newArray = [...inputTextArray]
+    //     let index = caretPos === value.length-1? caretPos:caretPos
+    //     if (!isBackSpacePressed && !isAllHighlighted) {
+    //         const char = value.charAt(caretPos)
+    //         newArray.splice(index, 0, char)
+    //         setCaretPos(prev => prev+1)
+    //     } else if (!isBackSpacePressed && isAllHighlighted) {
+    //         newArray.length = 0
+    //         newArray.splice(0, 0, value.charAt(0))
+    //         setIsAllHighlighted(false)
+    //         index = 0
+    //         setCaretPos(1)
+    //     } else if (isBackSpacePressed && !isAllHighlighted) {
+    //         newArray.splice(index, 1)
+    //     } else {
+    //         setCaretPos(0)
+    //         newArray.length = 0
+    //     }
+    //     setInputTextArray(newArray)
+    //     setInputText(value)
+    //     isBackSpacePressed = false
+    //     caretRef.current.parentNode.insertBefore(caretRef.current, caretRef.current.parentNode.childNodes[caretRef.current.parentNode.childNodes.length - 1])
+    //     persistCaretTemporarily(true)
+    //     console.log((value.match(/[^\r\n]+/g)).length)
+    // }
 
-    const getCaretClassNames = () => {
-        return props.isFocus? 'caret caret-focus':'caret'
-    }
+    // const persistCaretTemporarily = (show) => {
+    //     blinkCaret = false
+    //     setCaretVisible(show? true:false)
 
-    const persistCaretTemporarily = (show) => {
-        blinkCaret = false
-        setCaretVisible(show? true:false)
+    //     clearTimeout(blinkTimeout)
+    //     blinkTimeout = setTimeout(()=>{
+    //         blinkCaret = true
+    //     }, 70)
+    // }
 
-        clearTimeout(blinkTimeout)
-        blinkTimeout = setTimeout(()=>{
-            blinkCaret = true
-        }, 70)
-    }
+    // const moveCaret = (index, right=false) => {
+    //     const caretIndexInParent = right? index+1:index
+    //     setCaretIndex(caretIndexInParent)
+    //     caretRef.current.parentNode.insertBefore(caretRef.current, caretRef.current.parentNode.childNodes[caretIndexInParent])
+    //     setCaretPos(index)
+    // }
 
-    const moveCaret = (index, right=false) => {
-        const caretIndexInParent = right? index+1:index
-        setCaretIndex(caretIndexInParent)
-        caretRef.current.parentNode.insertBefore(caretRef.current, caretRef.current.parentNode.childNodes[caretIndexInParent])
-        setCaretPos(index)
-    }
+    // useEffect(()=>{
+    //     console.log(caretPos)
+    // }, [caretPos])
 
-    useEffect(()=>{
-        console.log(caretPos)
-    }, [caretPos])
-
-    const handleKeyDown = (event) => {
-        let index = event.target.selectionStart
-        if (event.keyCode === 8 && caretPos > 0) {
-            moveCaret(index-1)
-            console.log('pressed bkp')
-            isBackSpacePressed = true
-            if (isAllHighlighted)
-                onInput('')
-        } else if (event.keyCode === 37 && caretPos > 0) {
-            moveCaret(index-1)
-        }
-        else if (event.keyCode === 39 && caretPos < inputText.length) {
-            moveCaret(index+1, true)
-        }
-        else if (event.keyCode === 13) {
-            event.preventDefault()
-        }
-    }
+    // const handleKeyDown = (event) => {
+    //     let index = event.target.selectionStart
+    //     if (event.keyCode === 8 && caretPos > 0) {
+    //         moveCaret(index-1)
+    //         console.log('pressed bkp')
+    //         isBackSpacePressed = true
+    //         if (isAllHighlighted)
+    //             onInput('')
+    //     } else if (event.keyCode === 37 && caretPos > 0) {
+    //         moveCaret(index-1)
+    //     }
+    //     else if (event.keyCode === 39 && caretPos < inputText.length) {
+    //         moveCaret(index+1, true)
+    //     }
+    //     else if (event.keyCode === 13) {
+    //         event.preventDefault()
+    //     }
+    // }
 
     return (
-        <>
-        <div
-            className={getRegionClassNames()}
-            ref={mainInputRegion}>
+        <div className="input-region"
+            ref={inputRegionRef}
+            tabIndex="0"
+            onClick={e => e.target.focus()}
+            onKeyPress={e => dispatchForCode(e, getChar)}>
+            {inputTextArray}
         </div>
-        <div
+    )
+        {/* <div
             className={getInvisibleRegionClassNames() + ' input-region-invisible'}
             onChange={(e) => onInput(e.target.value)}
             ref={invisibleInputRegion}>
@@ -174,9 +190,7 @@ function InputRegion(props) {
                                 }}
                 onKeyDown={(e) => handleKeyDown(e)}
                 />
-            </div>
-        </>
-    )
+            </div> */}
 }
 
 export default InputRegion
