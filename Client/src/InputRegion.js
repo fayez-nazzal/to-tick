@@ -2,7 +2,7 @@ import React, {useState, useRef, useEffect} from 'react'
 import './inputRegion.css'
 
 function InputRegion(props) {
-    const caret = <img className="caret"/>
+    const caret = <span className="caret"> </span>
     const [spansArray, setSpansArray] = useState([caret])
     const [inputTextArray, setInputTextArray] = useState([])
     const inputRegionRef = useRef(null)
@@ -36,12 +36,10 @@ function InputRegion(props) {
         const newText = lastText + key
         
         if (isLastSpanRich || 
-            inputTextArray.length === 0 ||
-            (isLastSpanSpaces && key !== " ") ||
-            (!isLastSpanSpaces && key === " ")) {
-            modifyStateArrays(appendSpan, key !== " "? "text":"hidden", key)
+            inputTextArray.length === 0) {
+            modifyStateArrays(appendSpan, "text", key)
         } else if (!newText.endsWith('map')) {
-            modifyStateArrays(modifySpan, key !== " "? "text":"hidden", newText, -2)
+            modifyStateArrays(modifySpan, "text", newText, -2)
         }
     }
 
@@ -57,8 +55,6 @@ function InputRegion(props) {
     }
 
     const appendSpan = (spansClone, inputTextClone, className, text) => {
-        text = replaceLastSpace(text)
-
         spansClone.splice(-1, 0, 
             <span className={className}>
                 {text}
@@ -66,14 +62,8 @@ function InputRegion(props) {
 
         inputTextClone.push(text)
     }
-
-    const replaceLastSpace = (text) => {
-        return text.endsWith(" ")? text.trim()+"|":text
-    }
-
+ 
     const modifySpan = (spansClone, inputTextClone, className, text, index) => {
-        text = replaceLastSpace(text)
-
         spansClone.splice(index, 1, 
             <span className={className}>
                 {text}
