@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react'
+import React, {useState, useRef, useEffect} from 'react'
 import './inputRegion.css'
 
 function InputRegion(props) {
@@ -32,52 +32,58 @@ function InputRegion(props) {
 
     const writeChar = (key) => {
         setIsLastSpanRich(false)
-        if (key === " ") {
-
-        } else if (isLastSpanRich || 
-            inputTextArray.length === 0) {
-            appendSpan("text", key)
+        const lastText = inputTextArray[inputTextArray.length - 1]
+        const newText = lastText + key
+        
+        if (isLastSpanRich || 
+            inputTextArray.length === 0 ||
+            (isLastSpanSpaces && key !== " ") ||
+            (!isLastSpanSpaces && key === " ")) {
+            modifyStateArrays(appendSpan, key !== " "? "text":"hidden", key)
         } else if (!newText.endsWith('map')) {
-            newText = isLastSpanSpaces? lastText+"0":newText
-            spansArrayClone[lastIndex-1] = <span className={key===" "? "hidden":"text"}>
-                {newText}
-            </span>
-            textArrayClone[lastIndex-1] = newText
+            modifyStateArrays(modifySpan, key !== " "? "text":"hidden", newText, -2)
         }
-        //  else {
-        //     const prevText = newText.substring(0, -3)
-        //     newText = newText.slice(-3)
-
-        //     textArrayClone.push(newText)
-        //     spansArrayClone.splice(lastIndex, 0, <span className="text hh">{newText}</span>)
-            
-        //     if (prevText) {
-        //         textArrayClone[lastIndex-1] = prevText
-        //         spansArrayClone[lastIndex-1] = <span className="text">{prevText}</span>
-        //     } else {
-        //         textArrayClone.splice(lastIndex-1, 1)
-        //         spansArrayClone.splice(lastIndex-1, 1)
-        //     }
-
-        //     setIsLastSpanRich(true)
-        // }
-
     }
 
-    const appendSpan = (className, text) => {
-        const spansClone = [...spansArray]
+    const modifyStateArrays = (callback, className, text, ...args) => {
+        const spansArrayClone = [...spansArray]
+        const inputTextArrayClone = [...inputTextArray]
+
+        callback(spansArrayClone, inputTextArrayClone, className, text, ...args)
+
+        setSpansArray(spansArrayClone)
+        setInputTextArray(inputTextArrayClone)
+        setIsLastSpanSpaces(text.endsWith(" "))
+    }
+
+    const appendSpan = (spansClone, inputTextClone, className, text) => {
+        text = replaceLastSpace(text)
+
         spansClone.splice(-1, 0, 
             <span className={className}>
                 {text}
             </span>)
-        setSpansArray(spansClone)
 
-        const inpuTextClone = [...inputTextArray]
-        inpuTextClone.push(text)
-        setInputTextArray(inpuTextClone)
+        inputTextClone.push(text)
     }
 
-    useEffect(()=>{
+    const replaceLastSpace = (text) => {
+        return text.endsWith(" ")? text.trim()+"|":text
+    }
+
+    const modifySpan = (spansClone, inputTextClone, className, text, index) => {
+        text = replaceLastSpace(text)
+
+        spansClone.splice(index, 1, 
+            <span className={className}>
+                {text}
+            </span>)
+
+        const inputArrayIndex = index>0? index : inputTextClone.length + index
+        inputTextClone[inputArrayIndex + 1] = text
+    }
+
+    useEffect(() => {
         console.log(inputTextArray)
     }, [inputTextArray])
 

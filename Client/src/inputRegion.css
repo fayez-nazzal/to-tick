@@ -6,7 +6,8 @@
     margin-bottom: 100px;;
     text-align: left;
     background-color: blue;
-    word-wrap:break-word;
+    word-wrap: break-word;
+    word-break: break-all;
 }
 
 .hh {
