@@ -1,63 +1,106 @@
 import React, {useState, useEffect, useRef} from 'react'
 import './inputRegion.css'
 
-const keyCodeObj = {
-
-}
-
 function InputRegion(props) {
-    const [inputText, setInputText] = useState('')
-    const [inputTextArray, setInputTextArray] = useState([''])
-    const [caretBlink, setCaretBlink] = useState(true)
-    const [caretVisible, setCaretVisible] = useState(true)
-    const [caretPos, setCaretPos] = useState(0)
-    const [insertedChar, setInsertedChar] = useState(0)
-    const [insertIndex, setInsertIndex] = useState(0)
-    const [caretIndex, setCaretIndex] = useState(0)
-    const [isAllHighlighted, setIsAllHighlighted] = useState(false)
-    const caretRef = useRef(null)
+    const caret = <img className="caret"/>
+    const [spansArray, setSpansArray] = useState([caret])
+    const [inputTextArray, setInputTextArray] = useState([])
     const inputRegionRef = useRef(null)
-    const invisibleInputRegion = useRef(null)
-    const [inputRegionHeight, setInputRegionHeight] = useState()
-    const [lastSpanText, setLastSpanText] = useState('')
     const [isLastSpanRich, setIsLastSpanRich] = useState(false)
+    const [isLastSpanSpaces, setIsLastSpanSpaces] = useState(false)
+
+    const keyActionMap = {
+        letter: (letter) => {
+            writeChar(letter)
+        },
+        Backspace: () => {
+            deleteChar()
+        }
+    }
+
+    const handleKey = (event) => {
+        event.preventDefault()
+        return event.key !== "Shift"? 
+                event.key in keyActionMap?
+                        keyActionMap[event.key]() :
+                        event.key.length === 1?
+                            keyActionMap.letter(event.key) :
+                            null :
+                        null
+
+    }
+
+    const writeChar = (key) => {
+        setIsLastSpanRich(false)
+        if (key === " ") {
+
+        } else if (isLastSpanRich || 
+            inputTextArray.length === 0) {
+            appendSpan("text", key)
+        } else if (!newText.endsWith('map')) {
+            newText = isLastSpanSpaces? lastText+"0":newText
+            spansArrayClone[lastIndex-1] = <span className={key===" "? "hidden":"text"}>
+                {newText}
+            </span>
+            textArrayClone[lastIndex-1] = newText
+        }
+        //  else {
+        //     const prevText = newText.substring(0, -3)
+        //     newText = newText.slice(-3)
+
+        //     textArrayClone.push(newText)
+        //     spansArrayClone.splice(lastIndex, 0, <span className="text hh">{newText}</span>)
+            
+        //     if (prevText) {
+        //         textArrayClone[lastIndex-1] = prevText
+        //         spansArrayClone[lastIndex-1] = <span className="text">{prevText}</span>
+        //     } else {
+        //         textArrayClone.splice(lastIndex-1, 1)
+        //         spansArrayClone.splice(lastIndex-1, 1)
+        //     }
+
+        //     setIsLastSpanRich(true)
+        // }
+
+    }
+
+    const appendSpan = (className, text) => {
+        const spansClone = [...spansArray]
+        spansClone.splice(-1, 0, 
+            <span className={className}>
+                {text}
+            </span>)
+        setSpansArray(spansClone)
+
+        const inpuTextClone = [...inputTextArray]
+        inpuTextClone.push(text)
+        setInputTextArray(inpuTextClone)
+    }
 
     useEffect(()=>{
-        inputRegionRef.current.focus()
-    })
+        console.log(inputTextArray)
+    }, [inputTextArray])
 
-    const dispatchForCode = (event, callback) => {
-        let code
-      
-        if (event.key === undefined) {
-            code = event.key
-        } else {
-            code = event.keyCode? event.keyCode: event.which
-            code = String.fromCharCode(code)
+    const deleteChar = () => {
+        if (inputTextArray.length === 0) {
+            return
         }
-        
-        return code === "Shift"? null:
-                                callback(code)
-    }
-
-    const getChar = (keyPressed, shiftKey) => {
-        console.log(keyPressed)
-    }
-
-    const writeChar = (code) => {
-        const newArray = [...inputTextArray]
-        const index = newArray.length - 1
-        const newText = lastSpanText + code
-        if (!newText.endsWith('map')) {
-            newArray[index] = <span>{newText}</span>
-            setLastSpanText(newText)
+        const spansArrayClone = [...spansArray]
+        const textArrayClone = [...inputTextArray]
+        const lastText = textArrayClone[textArrayClone.length - 1]
+        const lastTextIndex = textArrayClone.length - 1
+        const lastSpanPos = spansArrayClone.length - 2
+        let newText
+        if (lastText.length > 1) {
+            newText = lastText.slice(0, -1)
+            textArrayClone[lastTextIndex] = newText
+            spansArrayClone[lastSpanPos] = <span>{newText}</span>
         } else {
-            newArray[index] = <span>{newText.slice(0, -3)}</span>
-            newArray.push(<span className="hh">{newText.slice(-3)}</span>)
-            newArray.push('')
-            setLastSpanText('')
+            spansArrayClone.splice(lastSpanPos, 1)
+            textArrayClone.splice(lastTextIndex, 1)
         }
-        setInputTextArray(newArray)
+        setSpansArray(spansArrayClone)
+        setInputTextArray(textArrayClone)
     }
 
     
@@ -146,8 +189,8 @@ function InputRegion(props) {
             ref={inputRegionRef}
             tabIndex="0"
             onClick={e => e.target.focus()}
-            onKeyPress={e => dispatchForCode(e, getChar)}>
-            {inputTextArray}
+            onKeyDown={e => handleKey(e)}>
+            {spansArray}
         </div>
     )
         {/* <div
