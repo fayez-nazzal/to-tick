@@ -1,5 +1,6 @@
 import React, {useState, useRef, useEffect} from 'react'
 import './inputRegion.css'
+import { text } from 'body-parser'
 
 function InputRegion(props) {
     const caret = <span className="caret"> </span>
@@ -8,18 +9,30 @@ function InputRegion(props) {
     const inputRegionRef = useRef(null)
     const [isLastSpanRich, setIsLastSpanRich] = useState(false)
     const [isLastSpanSpaces, setIsLastSpanSpaces] = useState(false)
-
+    const [caretIndex, setCaretIndex] = useState(0)
+    const [caretPos, setCaretPos] = useState(0)
+    
     const keyActionMap = {
         letter: (letter) => {
             writeChar(letter)
         },
         Backspace: () => {
             deleteChar()
+        },
+        ArrowRight: () => {
+            moveCaret(1)
+        },
+        ArrowLeft: () => {
+            moveCaret(-1)
+        },
+        Control: () => {
+            test()
         }
     }
 
     const handleKey = (event) => {
         event.preventDefault()
+        console.log(event.key)
         return event.key !== "Shift"? 
                 event.key in keyActionMap?
                         keyActionMap[event.key]() :
@@ -38,147 +51,126 @@ function InputRegion(props) {
         if (isLastSpanRich || 
             inputTextArray.length === 0) {
             modifyStateArrays(appendSpan, "text", key)
+            setCaretIndex(prev => prev+1)
         } else if (!newText.endsWith('map')) {
             modifyStateArrays(modifySpan, "text", newText, -2)
         }
+        setCaretPos(prev => prev+1)
     }
 
-    const modifyStateArrays = (callback, className, text, ...args) => {
-        const spansArrayClone = [...spansArray]
-        const inputTextArrayClone = [...inputTextArray]
-
-        callback(spansArrayClone, inputTextArrayClone, className, text, ...args)
-
-        setSpansArray(spansArrayClone)
-        setInputTextArray(inputTextArrayClone)
-        setIsLastSpanSpaces(text.endsWith(" "))
-    }
-
-    const appendSpan = (spansClone, inputTextClone, className, text) => {
-        spansClone.splice(-1, 0, 
-            <span className={className}>
-                {text}
-            </span>)
-
-        inputTextClone.push(text)
-    }
- 
-    const modifySpan = (spansClone, inputTextClone, className, text, index) => {
-        spansClone.splice(index, 1, 
-            <span className={className}>
-                {text}
-            </span>)
-
-        const inputArrayIndex = index>0? index : inputTextClone.length + index
-        inputTextClone[inputArrayIndex + 1] = text
-    }
-
-    useEffect(() => {
-        console.log(inputTextArray)
-    }, [inputTextArray])
-
-    const deleteChar = () => {
-        if (inputTextArray.length === 0) {
-            return
-        }
-        const spansArrayClone = [...spansArray]
-        const textArrayClone = [...inputTextArray]
-        const lastText = textArrayClone[textArrayClone.length - 1]
-        const lastTextIndex = textArrayClone.length - 1
-        const lastSpanPos = spansArrayClone.length - 2
-        let newText
-        if (lastText.length > 1) {
-            newText = lastText.slice(0, -1)
-            textArrayClone[lastTextIndex] = newText
-            spansArrayClone[lastSpanPos] = <span>{newText}</span>
-        } else {
-            spansArrayClone.splice(lastSpanPos, 1)
-            textArrayClone.splice(lastTextIndex, 1)
-        }
-        setSpansArray(spansArrayClone)
-        setInputTextArray(textArrayClone)
+    const test = () => {
+        modifyStateArrays(appendSpan, "text", 'a')
+        setTimeout(()=>{
+            modifyStateArrays(appendSpan, "text", 'c')
+        }, 120)
+        setTimeout(()=>{
+            setCaretIndex(prev => prev-1)
+        }, 120)
+        setTimeout(()=>{
+            modifyStateArrays(insertAtCaretIndex, "text", "newText")
+        }, 120)
     }
 
     
-    // useEffect(()=>{
-    //         setInterval(()=>{
-    //             if (blinkCaret)
-    //                 setCaretVisible(prev => !prev)
-    //         }, 500)
+    const deleteChar = () => {
+        if (inputTextArray.length === 0)
+        return
+        let lastText = inputTextArray[inputTextArray.length - 1]
+        if (!lastText || lastText.length === 1) {
+            modifyStateArrays(deleteSpan, -2)
+            setCaretIndex(prev => prev-1)
+        } else if (!isLastSpanRich) {
+            modifyStateArrays(modifySpan, "text", lastText.slice(0, -1), -2)
+        }
+        setCaretPos(prev => prev-1)
+    }
+    
+    const moveCaret = (x) => {
+        //case 1: the caret is at the end and move to the rght, not possible
+        //case 2: the caret is at the beggining and move to the left, not possible
+        /*
+        case 3: the caret is at the end  and go left,
+        remove first letter from the preceeding span,
+        add that letter to to a new span
+        move the caret before the new span
+         */
+        /*
+        case 4: the caret is at the center and move left,
+        remove first letter from preceding span,
+        add that letter to the leading span,
+        don't move caret
+        */
+       const spansClone = [...spansArray]
+       const textClone = [...inputTextArray]
+       let caretIndexClone = caretIndex
+       while (x > 0) {
+        
+        x--
+       }
 
-    //     // TODO make clear when input disappears (like going to settings page)
-    // }, [])
+       while (x < 0) {
+           const char = textClone[caretIndexClone-1].slice(-1)
+           textClone[caretIndexClone-1] = textClone[caretIndexClone-1].slice(0, -1)
+           spansClone[caretIndexClone-1] = <span className="text">{textClone[caretIndexClone-1]}</span>
+        // case 3 use switch for all left cases
+            spansClone.splice(caretIndexClone+1, 0, <span className="text">{char}</span>)
+            textClone.push(char)
+        x++
+       }
+       setCaretIndex(caretIndexClone)
+       setSpansArray(spansClone)
+       setInputTextArray(textClone)
+    }
 
-    // useEffect(()=> {
-    //     caretRef.current.parentNode.insertBefore(caretRef.current, caretRef.current.parentNode.childNodes[caretPos])
-    // }, [inputTextArray, caretPos])
+    function moveInArray(arr, from, to) {
+        var elem = arr[from];
+        arr.splice(from, 1);
+        arr.splice(to, 0, elem);
+    }
 
-    // const onInput = (value) => {
-    //     const newArray = [...inputTextArray]
-    //     let index = caretPos === value.length-1? caretPos:caretPos
-    //     if (!isBackSpacePressed && !isAllHighlighted) {
-    //         const char = value.charAt(caretPos)
-    //         newArray.splice(index, 0, char)
-    //         setCaretPos(prev => prev+1)
-    //     } else if (!isBackSpacePressed && isAllHighlighted) {
-    //         newArray.length = 0
-    //         newArray.splice(0, 0, value.charAt(0))
-    //         setIsAllHighlighted(false)
-    //         index = 0
-    //         setCaretPos(1)
-    //     } else if (isBackSpacePressed && !isAllHighlighted) {
-    //         newArray.splice(index, 1)
-    //     } else {
-    //         setCaretPos(0)
-    //         newArray.length = 0
-    //     }
-    //     setInputTextArray(newArray)
-    //     setInputText(value)
-    //     isBackSpacePressed = false
-    //     caretRef.current.parentNode.insertBefore(caretRef.current, caretRef.current.parentNode.childNodes[caretRef.current.parentNode.childNodes.length - 1])
-    //     persistCaretTemporarily(true)
-    //     console.log((value.match(/[^\r\n]+/g)).length)
-    // }
+    const modifyStateArrays = (callback, ...args) => {
+        const spansArrayReference = [...spansArray]
+        const inputTextArrayReference = [...inputTextArray]
 
-    // const persistCaretTemporarily = (show) => {
-    //     blinkCaret = false
-    //     setCaretVisible(show? true:false)
+        callback(spansArrayReference, inputTextArrayReference, ...args)
 
-    //     clearTimeout(blinkTimeout)
-    //     blinkTimeout = setTimeout(()=>{
-    //         blinkCaret = true
-    //     }, 70)
-    // }
+        setSpansArray(spansArrayReference)
+        setInputTextArray(inputTextArrayReference)
+    }
 
-    // const moveCaret = (index, right=false) => {
-    //     const caretIndexInParent = right? index+1:index
-    //     setCaretIndex(caretIndexInParent)
-    //     caretRef.current.parentNode.insertBefore(caretRef.current, caretRef.current.parentNode.childNodes[caretIndexInParent])
-    //     setCaretPos(index)
-    // }
+    const appendSpan = (spansReference, inputTextReference, className, text) => {
+        spansReference.splice(-1, 0, 
+            <span className={className}>
+                {text}
+            </span>)
 
-    // useEffect(()=>{
-    //     console.log(caretPos)
-    // }, [caretPos])
+        inputTextReference.push(text)
+    }
+ 
+    const modifySpan = (spansReference, inputTextReference, className, text, index) => {
+        spansReference.splice(index, 1, 
+            <span className={className}>
+                {text}
+            </span>)
 
-    // const handleKeyDown = (event) => {
-    //     let index = event.target.selectionStart
-    //     if (event.keyCode === 8 && caretPos > 0) {
-    //         moveCaret(index-1)
-    //         console.log('pressed bkp')
-    //         isBackSpacePressed = true
-    //         if (isAllHighlighted)
-    //             onInput('')
-    //     } else if (event.keyCode === 37 && caretPos > 0) {
-    //         moveCaret(index-1)
-    //     }
-    //     else if (event.keyCode === 39 && caretPos < inputText.length) {
-    //         moveCaret(index+1, true)
-    //     }
-    //     else if (event.keyCode === 13) {
-    //         event.preventDefault()
-    //     }
-    // }
+        const inputArrayIndex = index>=0? index: inputTextReference.length + index + 1
+        inputTextReference[inputArrayIndex] = text
+    }
+
+    const insertAtCaretIndex = (spansReference, inputTextArrayReference, index) => {
+        //Modify the span that is right before the caret position
+    }
+
+    const deleteSpan = (spansReference, inputTextReference, index) => {
+        spansReference.splice(index, 1)
+        const inputArrayIndex = index>=0? index: inputTextReference.length + index + 1
+        inputTextReference.splice(inputArrayIndex, 1)
+    }
+
+    useEffect(() => {
+        console.log('index: ' + caretIndex)
+        console.log('spans: ', spansArray)
+    }, [caretIndex, spansArray])
 
     return (
         <div className="input-region"
