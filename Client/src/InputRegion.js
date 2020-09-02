@@ -20,10 +20,10 @@ function InputRegion(props) {
             deleteChar()
         },
         ArrowRight: () => {
-            moveCaret(1)
+            moveCaretOnes('right')
         },
         ArrowLeft: () => {
-            moveCaret(-1)
+            moveCaretOnes('left')
         },
         Control: () => {
             test()
@@ -85,41 +85,66 @@ function InputRegion(props) {
         setCaretPos(prev => prev-1)
     }
     
-    const moveCaret = (x) => {
-        //case 1: the caret is at the end and move to the rght, not possible
-        //case 2: the caret is at the beggining and move to the left, not possible
-        /*
-        case 3: the caret is at the end  and go left,
-        remove first letter from the preceeding span,
-        add that letter to to a new span
-        move the caret before the new span
-         */
-        /*
-        case 4: the caret is at the center and move left,
-        remove first letter from preceding span,
-        add that letter to the leading span,
-        don't move caret
-        */
-       const spansClone = [...spansArray]
-       const textClone = [...inputTextArray]
-       let caretIndexClone = caretIndex
-       while (x > 0) {
-        
-        x--
-       }
+    const characterAt = (str, pos) => {
+        return pos>=0? str.charAt(pos) : Array.from(str).splice(pos, 1)[0]
+    }
 
-       while (x < 0) {
-           const char = textClone[caretIndexClone-1].slice(-1)
-           textClone[caretIndexClone-1] = textClone[caretIndexClone-1].slice(0, -1)
-           spansClone[caretIndexClone-1] = <span className="text">{textClone[caretIndexClone-1]}</span>
-        // case 3 use switch for all left cases
-            spansClone.splice(caretIndexClone+1, 0, <span className="text">{char}</span>)
-            textClone.push(char)
-        x++
-       }
-       setCaretIndex(caretIndexClone)
-       setSpansArray(spansClone)
-       setInputTextArray(textClone)
+    const hypirdSlice = (str, pos) => {
+        return pos>=0? str.slice(pos+1) : str.slice(0, pos)
+    }
+
+    const moveCaretOnes = (dir) => {
+        if (!dir in ['left', 'right'] ||
+            (dir==='right' && caretIndex === spansArray.length-1) ||
+            (dir==='left' && caretIndex === 0)) return;
+        
+        const spansClone = [...spansArray]
+        const textClone = [...inputTextArray]
+
+        const [textRemoveIndex, 
+                spansRemoveIndex, 
+                charPos] = dir==="left"? 
+                                [caretIndex-1, caretIndex-1, -1] : 
+                                [caretIndex, caretIndex+1, 0]
+
+        const char = characterAt(textClone[textRemoveIndex], charPos)
+        textClone[textRemoveIndex] = hypirdSlice(textClone[textRemoveIndex], charPos)
+        spansClone[spansRemoveIndex] = <span className="text">{textClone[textRemoveIndex]}</span>
+        
+        console.log(char)
+        console.log(textClone[textRemoveIndex])
+        console.log(spansClone[spansRemoveIndex])
+
+        switch(true) {
+            case (dir==="right" && caretIndex===0):
+                spansClone.splice(0, 0, <span className="text">{char}</span>)
+                textClone.splice(0, 0, char)
+                setCaretIndex(1)
+            break;
+            
+            case (dir==="left" && caretIndex===spansClone.length-1):
+                spansClone.splice(caretIndex+1, 0, <span className="text">{char}</span>)
+                textClone.push(char)
+            break;
+
+            case (dir==="left"):
+                textClone[caretIndex] = char + textClone[caretIndex]
+                spansClone[caretIndex+1] = <span className="text">{textClone[caretIndex]}</span>
+                if (textClone[caretIndex-1] === "") {
+                    textClone.splice(0, 1)
+                    spansClone.splice(0, 1)
+                    setCaretIndex(0)
+                }
+            break;
+
+            case (dir==="right"):
+                textClone[caretIndex-1] = textClone[caretIndex-1] + char
+                spansClone[caretIndex-1] = <span className="text">{textClone[caretIndex-1]}</span>
+            
+        }
+
+        setSpansArray(spansClone)
+        setInputTextArray(textClone)
     }
 
     function moveInArray(arr, from, to) {
@@ -169,8 +194,9 @@ function InputRegion(props) {
 
     useEffect(() => {
         console.log('index: ' + caretIndex)
+        console.log('inputTextArray: ', inputTextArray)
         console.log('spans: ', spansArray)
-    }, [caretIndex, spansArray])
+    }, [caretIndex, inputTextArray, spansArray])
 
     return (
         <div className="input-region"
