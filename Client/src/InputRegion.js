@@ -111,10 +111,6 @@ function InputRegion(props) {
         textClone[textRemoveIndex] = hypirdSlice(textClone[textRemoveIndex], charPos)
         spansClone[spansRemoveIndex] = <span className="text">{textClone[textRemoveIndex]}</span>
         
-        console.log(char)
-        console.log(textClone[textRemoveIndex])
-        console.log(spansClone[spansRemoveIndex])
-
         switch(true) {
             case (dir==="right" && caretIndex===0):
                 spansClone.splice(0, 0, <span className="text">{char}</span>)
@@ -130,7 +126,7 @@ function InputRegion(props) {
             case (dir==="left"):
                 textClone[caretIndex] = char + textClone[caretIndex]
                 spansClone[caretIndex+1] = <span className="text">{textClone[caretIndex]}</span>
-                if (textClone[caretIndex-1] === "") {
+                if (textClone[0]==="") {
                     textClone.splice(0, 1)
                     spansClone.splice(0, 1)
                     setCaretIndex(0)
@@ -140,6 +136,11 @@ function InputRegion(props) {
             case (dir==="right"):
                 textClone[caretIndex-1] = textClone[caretIndex-1] + char
                 spansClone[caretIndex-1] = <span className="text">{textClone[caretIndex-1]}</span>
+                if (textClone[textClone.length-1]==="") {
+                    console.log('true')
+                    textClone.splice(-1, 1)
+                    spansClone.splice(-1, 1)
+                }
             
         }
 
