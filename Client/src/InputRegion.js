@@ -44,16 +44,15 @@ function InputRegion(props) {
     }
 
     const writeChar = (key) => {
-        setIsLastSpanRich(false)
-        const lastText = inputTextArray[inputTextArray.length - 1]
-        const newText = lastText + key
-        
+        setIsLastSpanRich(false)        
         if (isLastSpanRich || 
             inputTextArray.length === 0) {
             modifyStateArrays(appendSpan, "text", key)
             setCaretIndex(prev => prev+1)
-        } else if (!newText.endsWith('map')) {
-            modifyStateArrays(modifySpan, "text", newText, -2)
+        } else {
+            const textBeforeCaret = inputTextArray[caretIndex-1]
+            const newText = textBeforeCaret + key
+            modifyStateArrays(modifySpan, "text", newText, caretIndex-1)
         }
         setCaretPos(prev => prev+1)
     }
