@@ -9,6 +9,21 @@
     word-wrap: break-word;
     word-break: break-word;
     padding: 10px;
+    position: relative;
+}
+
+/* Note if you change padding or size in input region change it in the hidden one */
+.input-hidden-region {
+    width: 96%;
+    height: 96%;
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    font-size: inherit;
+    border: inherit;
+    opacity: 0;
+    padding: 10px;
+    text-align: left;
 }
 
 .hh {
@@ -26,9 +41,24 @@
 }
 
 .caret {
+    position: relative;
     letter-spacing: -3.4px;
     visibility: visible;
-    margin-left: 1px;
     white-space: pre;
-    background-color: rgba(0, 48, 0, 0.9);
+    margin-left: -1.5px;
+    left: 2px;
+    background-color: rgba(0, 48, 0, 0.9); 
+}
+
+.caret-write {
+    left: 0;
+    animation: smoothlyGoLeft 100ms linear;
+}
+
+@keyframes smoothlyGoLeft {
+    from {
+        left: -1.4px;
+    } to {
+        left: 2px;
+    }
 }

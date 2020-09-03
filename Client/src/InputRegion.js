@@ -2,46 +2,20 @@ import React, {useState, useRef, useEffect} from 'react'
 import './inputRegion.css'
 import { text } from 'body-parser'
 
+let persistCaret = false
+let persistTimeout
+
 function InputRegion(props) {
-    const caret = <span className="caret"> </span>
+    const caretRef = useRef(null)
+    const [isCaretVisible, setIsCaretVisible] = useState(false)
+    const caret = <span className="caret caret-write" ref={caretRef}> </span>
     const [spansArray, setSpansArray] = useState([caret])
     const [inputTextArray, setInputTextArray] = useState([])
     const inputRegionRef = useRef(null)
     const [isLastSpanRich, setIsLastSpanRich] = useState(false)
-    const [isLastSpanSpaces, setIsLastSpanSpaces] = useState(false)
     const [caretIndex, setCaretIndex] = useState(0)
     const [caretPos, setCaretPos] = useState(0)
-    
-    const keyActionMap = {
-        letter: (letter) => {
-            writeChar(letter)
-        },
-        Backspace: () => {
-            deleteChar()
-        },
-        ArrowRight: () => {
-            moveCaretOnes('right')
-        },
-        ArrowLeft: () => {
-            moveCaretOnes('left')
-        },
-        Control: () => {
-            test()
-        }
-    }
-
-    const handleKey = (event) => {
-        event.preventDefault()
-        console.log(event.key)
-        return event.key !== "Shift"? 
-                event.key in keyActionMap?
-                        keyActionMap[event.key]() :
-                        event.key.length === 1?
-                            keyActionMap.letter(event.key) :
-                            null :
-                        null
-
-    }
+    const [inputValueLen, setInputValueLen] = useState(0)
 
     const writeChar = (key) => {
         setIsLastSpanRich(false)        
@@ -56,30 +30,17 @@ function InputRegion(props) {
         }
         setCaretPos(prev => prev+1)
     }
-
-    const test = () => {
-        modifyStateArrays(appendSpan, "text", 'a')
-        setTimeout(()=>{
-            modifyStateArrays(appendSpan, "text", 'c')
-        }, 120)
-        setTimeout(()=>{
-            setCaretIndex(prev => prev-1)
-        }, 120)
-        setTimeout(()=>{
-            modifyStateArrays(insertAtCaretIndex, "text", "newText")
-        }, 120)
-    }
-
     
     const deleteChar = () => {
         if (inputTextArray.length === 0)
         return
-        let lastText = inputTextArray[inputTextArray.length - 1]
+        let lastText = inputTextArray[caretIndex - 1]
         if (!lastText || lastText.length === 1) {
-            modifyStateArrays(deleteSpan, -2)
+            modifyStateArrays(deleteSpan, caretIndex-1)
             setCaretIndex(prev => prev-1)
-        } else if (!isLastSpanRich) {
-            modifyStateArrays(modifySpan, "text", lastText.slice(0, -1), -2)
+        } else {
+            modifyStateArrays(modifySpan, "text",
+                             inputTextArray[caretIndex-1].slice(0, -1), caretIndex-1)
         }
         setCaretPos(prev => prev-1)
     }
@@ -92,65 +53,86 @@ function InputRegion(props) {
         return pos>=0? str.slice(pos+1) : str.slice(0, pos)
     }
 
-    const moveCaretOnes = (dir) => {
+    const moveCaret = (target) => {
+
+        let diff = caretPos - target
+        const dir = diff>0? "left" : "right"
+        diff = Math.abs(diff)
+
         if (!dir in ['left', 'right'] ||
             (dir==='right' && caretIndex === spansArray.length-1) ||
             (dir==='left' && caretIndex === 0)) return;
         
         const spansClone = [...spansArray]
         const textClone = [...inputTextArray]
-
-        const [textRemoveIndex, 
-                spansRemoveIndex, 
-                charPos] = dir==="left"? 
-                                [caretIndex-1, caretIndex-1, -1] : 
-                                [caretIndex, caretIndex+1, 0]
-
-        const char = characterAt(textClone[textRemoveIndex], charPos)
-        textClone[textRemoveIndex] = hypirdSlice(textClone[textRemoveIndex], charPos)
-        spansClone[spansRemoveIndex] = <span className="text">{textClone[textRemoveIndex]}</span>
+        let i = caretIndex
+        let p = caretPos
         
-        switch(true) {
-            case (dir==="right" && caretIndex===0):
-                spansClone.splice(0, 0, <span className="text">{char}</span>)
-                textClone.splice(0, 0, char)
-                setCaretIndex(1)
-            break;
+        while (diff>0) {
+            const [textRemoveIndex, 
+                    spansRemoveIndex, 
+                    charPos] = dir==="left"? 
+                                    [i-1, i-1, -1] : 
+                                    [i, i+1, 0]
             
-            case (dir==="left" && caretIndex===spansClone.length-1):
-                spansClone.splice(caretIndex+1, 0, <span className="text">{char}</span>)
-                textClone.push(char)
-            break;
-
-            case (dir==="left"):
-                textClone[caretIndex] = char + textClone[caretIndex]
-                spansClone[caretIndex+1] = <span className="text">{textClone[caretIndex]}</span>
-                if (textClone[0]==="") {
-                    textClone.splice(0, 1)
-                    spansClone.splice(0, 1)
-                    setCaretIndex(0)
-                }
-            break;
-
-            case (dir==="right"):
-                textClone[caretIndex-1] = textClone[caretIndex-1] + char
-                spansClone[caretIndex-1] = <span className="text">{textClone[caretIndex-1]}</span>
-                if (textClone[textClone.length-1]==="") {
-                    console.log('true')
-                    textClone.splice(-1, 1)
-                    spansClone.splice(-1, 1)
-                }
+            const char = characterAt(textClone[textRemoveIndex], charPos)
+            textClone[textRemoveIndex] = hypirdSlice(textClone[textRemoveIndex], charPos)
+            spansClone[spansRemoveIndex] =  <span className="text">
+                                                {textClone[textRemoveIndex]}
+                                            </span>
             
+            switch(true) {
+                case (dir==="right" && i===0):
+                    spansClone.splice(0, 0, <span className="text">{char}</span>)
+                    textClone.splice(0, 0, char)
+                    i = 1
+                break;
+                
+                case (dir==="left" && i===spansClone.length-1):
+                    spansClone.splice(i+1, 0,  <span className="text">
+                                                            {char}
+                                                        </span>)
+                    textClone.push(char)
+                break;
+
+                case (dir==="left"):
+                    textClone[i] = char + textClone[i]
+                    spansClone[i+1] =   <span className="text">
+                                                    {textClone[i]}
+                                        </span>
+                    if (deleteEmpty(textClone, spansClone, 0, 0)) {
+                        i = 0
+                    }
+                    
+                break;
+
+                case (dir==="right"):
+                    textClone[i-1] = textClone[i-1] + char
+                    spansClone[i-1] =  <span className="text">
+                                                    {textClone[i-1]}
+                                                </span>
+                    deleteEmpty(textClone, spansClone, -1, -1)
+            }
+
+            p = dir==="left"? p-1 : p+1
+
+            diff--
         }
 
+        setCaretIndex(i)
+        setCaretPos(p)
         setSpansArray(spansClone)
         setInputTextArray(textClone)
     }
 
-    function moveInArray(arr, from, to) {
-        var elem = arr[from];
-        arr.splice(from, 1);
-        arr.splice(to, 0, elem);
+
+    const deleteEmpty = (textClone, spansClone, index1, index2) => {
+        if (textClone[index1>=0? index1 : textClone.length + index1]==="") {
+            textClone.splice(index1, 1)
+            spansClone.splice(index2, 1)
+            return true
+        }
+        return false
     }
 
     const modifyStateArrays = (callback, ...args) => {
@@ -182,72 +164,85 @@ function InputRegion(props) {
         inputTextReference[inputArrayIndex] = text
     }
 
-    const insertAtCaretIndex = (spansReference, inputTextArrayReference, index) => {
-        //Modify the span that is right before the caret position
-    }
-
     const deleteSpan = (spansReference, inputTextReference, index) => {
         spansReference.splice(index, 1)
         const inputArrayIndex = index>=0? index: inputTextReference.length + index + 1
         inputTextReference.splice(inputArrayIndex, 1)
     }
 
-    useEffect(() => {
-        console.log('index: ' + caretIndex)
-        console.log('inputTextArray: ', inputTextArray)
-        console.log('spans: ', spansArray)
-    }, [caretIndex, inputTextArray, spansArray])
+    const handleAccentChar = (e) => {
+        const { value, selectionStart } = e.target
+
+        const char = value.charAt(selectionStart-1)
+        
+        persistCaretTemporarily(200)
+
+        if (value.length > inputValueLen) {
+            caretRef.current.className = "caret caret-write"
+            writeChar(char)
+            setTimeout(()=>{
+                caretRef.current.className = "caret"
+            }, 100)
+        }
+        else if (value.length < inputValueLen) {
+            deleteChar()
+        } else {
+            const newText = inputTextArray[caretIndex-1].slice(0, -1) + char
+            modifyStateArrays(modifySpan, "text", newText, caretIndex-1)
+        }
+
+        setInputValueLen(value.length)
+    } 
+
+    useEffect(()=>{
+        makeCaretBlinkInterval(600)
+    }, [])
+
+    useEffect(()=>{
+        caretRef.current.style.opacity = isCaretVisible? 1:0
+    }, [isCaretVisible])
+
+    const makeCaretBlinkInterval = (time) => {
+        setInterval(()=>{
+            if (!persistCaret)
+                setIsCaretVisible(prev => !prev)
+    }, time)
+    }
+
+    const handleSelectionChange = (e) => {
+        const {selectionStart} = e.target
+
+        if (caretPos === selectionStart)
+            return
+
+        persistCaretTemporarily(150)
+        
+        moveCaret(selectionStart)
+    }
+
+    const persistCaretTemporarily = (time) => {
+        setIsCaretVisible(true)
+        persistCaret = true
+        clearTimeout(persistTimeout)
+
+        persistTimeout = setTimeout(()=>{
+            persistCaret = false
+        }, time)
+    }
 
     return (
         <div className="input-region"
             ref={inputRegionRef}
             tabIndex="0"
-            onClick={e => e.target.focus()}
-            onKeyDown={e => handleKey(e)}>
+            >
             {spansArray}
+            <textarea className="input-hidden-region" 
+                    autoFocus={true}
+                    onChange={e => handleAccentChar(e)}
+                    onSelect={e => handleSelectionChange(e)}
+                    />
         </div>
     )
-        {/* <div
-            className={getInvisibleRegionClassNames() + ' input-region-invisible'}
-            onChange={(e) => onInput(e.target.value)}
-            ref={invisibleInputRegion}>
-            {inputTextArray.map((elem, index) => 
-                <span style={{ visibility: 'visible', whiteSpace: 'pre', backgroundColor:isAllHighlighted? '#7DBC00':''}} key={index}>{elem}</span>
-            )}
-            <img
-                style={{opacity: caretVisible&&props.isFocus? 1:0}}
-                className={getCaretClassNames()}
-                ref={caretRef} />
-            <textarea
-                type="text"
-                autoComplete="off"
-                className={getInputClassName()}
-                placeholder="Add a task"
-                value={inputText}
-                ref={props.inputRef}
-                onChange={(event) => props.handleInputChange(event)}
-                onBlur={(event) => {
-                    props.setIsFocus(false)
-                    props.handleBlur(event)
-                    persistCaretTemporarily(false)
-                }}
-                autoFocus={true}
-                onFocus={() => {
-                    props.setIsFocus(true)
-                    persistCaretTemporarily(false)
-                }}
-                onClick={(e) => {
-                    moveCaret(e.target.selectionStart, true)
-                    setIsAllHighlighted(false)
-                }}
-                onPaste={e => e.preventDefault()}
-                onDoubleClick={e => {e.target.setSelectionRange(0, inputTextArray.length)
-                                    setIsAllHighlighted(true)
-                                    moveCaret(inputTextArray.length+1)
-                                }}
-                onKeyDown={(e) => handleKeyDown(e)}
-                />
-            </div> */}
 }
 
 export default InputRegion
