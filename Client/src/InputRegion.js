@@ -13,12 +13,12 @@ function InputRegion(props) {
     const [caretPos, setCaretPos] = useState(0)
     const [isCaretVisible, setIsCaretVisible] = useState(false)
     
+    const inputRegionRef = useRef(null)
     const [spansArray, setSpansArray] = useState([caret])
     const [textArray, setInputTextArray] = useState([])
-    const inputRegionRef = useRef(null)
     const [lastInputValueLen, setLastInputValueLen] = useState(0)
-    const [key, setKey] = useState(0)
-    
+    const [spanKey, setSpanKey] = useState(0)
+
     useEffect(()=>{
         // TODO clean this interval in unmount
         caretInterval = setInterval(()=>{
@@ -53,14 +53,15 @@ function InputRegion(props) {
 
     const writeChar = (key) => {
         setCaretPos(prev => prev+1)
-        if ( textArray.length === 0 ) {
+        if ( textArray.length === 0 || 
+             spansArray[caretIndex-1].props.rich ) {
             const modifiedTextArray = modifyStateArrays(appendSpan, "normal-text", key)
             setCaretIndex(prev => prev+1)
             return modifiedTextArray
         } else if (textArray[caretIndex-1].slice(-2)+key === 'map') {
             modifyStateArrays(modifyAndAppendSpan, "normal-text",
                                 "map-text", textArray[caretIndex-1].slice(0, -2),
-                                "map", caretIndex-1)
+                                "map", caretIndex-1, true)
             setCaretIndex(prev => prev+1)
         } else {
             const textBeforeCaret = textArray[caretIndex-1]
@@ -97,15 +98,13 @@ function InputRegion(props) {
         return pos>=0? str.slice(pos+1) : str.slice(0, pos)
     }
 
-    useEffect(()=>{
-        setKey(prev => prev++)
-    }, [spansArray])
-
-    const createTextSpan = (value, className='normal-text') => {
+    const createTextSpan = (value, key, className='normal-text', rich=false) => {
+        setSpanKey(key)
         return <TextSpan 
             key={key} 
             className={className} 
-            value={value} />
+            value={value}
+            rich={rich} />
     }
 
     const moveCaret = (target) => {
@@ -121,51 +120,72 @@ function InputRegion(props) {
         const textClone = [...textArray]
         let i = caretIndex
         let p = caretPos
-        
+        let char
+        let isSpanBeforeRich
+        let isSpanAfterRich
+
         while (diff>0) {
+            isSpanBeforeRich = spansClone[i-1]!=undefined && spansClone[i-1].props.rich
+            isSpanAfterRich = spansClone[i+1]!=undefined && spansClone[i+1].props.rich
+
             const [textRemoveIndex, 
                     spansRemoveIndex, 
                     charPos] = dir==="left"? 
                                     [i-1, i-1, -1] : 
                                     [i, i+1, 0]
             
-            const char = characterAt(textClone[textRemoveIndex], charPos)
-            textClone[textRemoveIndex] = hypirdSlice(textClone[textRemoveIndex], charPos)
-            spansClone[spansRemoveIndex] =  createTextSpan(textClone[textRemoveIndex])
-            
-            switch(true) {
-                case (dir==="right" && i===0):
-                    spansClone.splice(0, 0, createTextSpan(char))
+            if (dir==="left" && isSpanBeforeRich) {
+                console.log('if1')
+                p-=3
+                inputRegionRef.current.childNodes[inputRegionRef.current.childNodes.length-1].selectionStart -= 2
+                inputRegionRef.current.childNodes[inputRegionRef.current.childNodes.length-1].selectionEnd -= 2
+                spansClone.splice(i+1, 0, spansClone.splice(i-1, 1))
+            } else {
+                char = characterAt(textClone[textRemoveIndex], charPos)
+                
+                textClone[textRemoveIndex] = hypirdSlice(
+                    textClone[textRemoveIndex], charPos)
+                
+                spansClone[spansRemoveIndex] =  createTextSpan(
+                    textClone[textRemoveIndex])
+                
+                if (dir==="right" && i===0) {
+                    spansClone.splice(0, 0, createTextSpan(char,
+                        spanKey+1))
                     textClone.splice(0, 0, char)
                     i = 1
-                break;
-                
-                case (dir==="left" && i===spansClone.length-1):
-                    spansClone.splice(i+1, 0,  createTextSpan(char))
-                    textClone.push(char)
-                break;
-
-                case (dir==="left"):
-                    textClone[i] = char + textClone[i]
-                    spansClone[i+1] =   createTextSpan(textClone[i])
-                     if (textClone[0]==="") {
-                        textClone.splice(0, 1)
-                        spansClone.splice(0, 1)
-                        i=0
-                     }
-                    
-                break;
-
-                case (dir==="right"):
+                    p++
+                } else if (dir==="right") {
                     textClone[i-1] = textClone[i-1] + char
-                    spansClone[i-1] =  createTextSpan(textClone[i-1])
+                    spansClone[i-1] =  createTextSpan(textClone[i-1], 
+                        spansClone[i-1].props.key)
                     if (textClone[textClone.length-1]==="") {
                         textClone.splice(-1, 1)
                         spansClone.splice(-1, 1)
                     }
+                    p++
+                } else if (dir==="left" && 
+                    (i===spansClone.length-1 || isSpanAfterRich)) {
+                        console.log('heeeeeeeeeey')
+                    spansClone.splice(i+1, 0,  createTextSpan(char,
+                        spanKey+1))
+                    textClone.splice(i+1, 0, char)
+                    p--
+                    console.log('left last')
+                } else if (dir==="left" && !isSpanAfterRich) {
+                    console.log('ooo')
+                    textClone[i] = char + textClone[i]
+                    spansClone[i+1] = createTextSpan(textClone[i],
+                        spansClone[i-1].props.key)
+                        if (textClone[0]==="") {
+                            textClone.splice(0, 1)
+                            spansClone.splice(0, 1)
+                        i=0
+                    }
+                    p--
+                }
             }
 
-            p = dir==="left"? p-1 : p+1
 
             diff--
         }
@@ -188,23 +208,28 @@ function InputRegion(props) {
         return textArrayReference
     }
 
-    const appendSpan = (spansReference, textReference, className, text) => {
-        spansReference.splice(-1, 0, createTextSpan(text, className))
+    const appendSpan = (spansReference, textReference, className, text, rich=false) => {
+        spansReference.splice(-1, 0, createTextSpan(text, spanKey+1, className, rich))
 
         textReference.push(text)
     }
  
-    const modifySpan = (spansReference, textReference, className, text, index) => {
-        spansReference.splice(index, 1, createTextSpan(text, className))
+    const modifySpan = (spansReference, textReference, className, text, index, rich=false) => {
+        spansReference.splice(index, 1, 
+            createTextSpan(text, 
+                spansReference[index].props.key, 
+                className, rich))
 
-        const inputArrayIndex = index>=0? index: textReference.length + index + 1
+        const inputArrayIndex = index>=0? index:
+                     textReference.length + index + 1
         textReference[inputArrayIndex] = text
     }
 
     const modifyAndAppendSpan = (spansReference, textReference,
-                                 cls1, cls2, txt1, txt2, index) => {
-        modifySpan(spansReference, textReference, cls1, txt1, index)
-        appendSpan(spansReference, textReference, cls2, txt2)
+                                 cls1, cls2, txt1, txt2, index,
+                                 rich=false) => {
+        modifySpan(spansReference, textReference, cls1, txt1, index, rich)
+        appendSpan(spansReference, textReference, cls2, txt2, rich)
     }
 
     const deleteSpan = (spansReference, textReference, index) => {
