@@ -10,6 +10,8 @@
     word-break: break-word;
     padding: 10px;
     position: relative;
+    font-family: Quicksand;
+    font-weight: 300;
 }
 
 /* Note if you change padding or size in input region change it in the hidden one */
@@ -24,6 +26,8 @@
     opacity: 0;
     padding: 10px;
     text-align: left;
+    font-family: Quicksand;
+    font-weight: 300;
 }
 
 .hh {
@@ -34,10 +38,15 @@
     border-color: green;
 }
 
-.text, .caret {
+.normal-text, .map-text, .caret {
     word-wrap:break-word;
     white-space: pre-wrap;
     text-align: left;
+}
+
+.map-text {
+    background-color: teal;
+    border: 1px solid red;
 }
 
 .caret {

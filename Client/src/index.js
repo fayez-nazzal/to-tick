@@ -5,6 +5,7 @@ import ReactDOM from "react-dom"
 import App from "./App"
 import {BrowserRouter} from 'react-router-dom'
 import { DataContextProvider } from './contexts/dataContext' 
+import 'normalize.css';
 import "./style.css"
 
 ReactDOM.render(
