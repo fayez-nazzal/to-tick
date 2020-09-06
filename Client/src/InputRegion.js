@@ -8,7 +8,11 @@ let caretInterval
 
 function InputRegion(props) {
     const caretRef = useRef(null)
-    const caret = <span className="caret caret-write" ref={caretRef}> </span>
+    const caret = <span className="caret-container"> 
+                        <span 
+                            className="caret caret-write"
+                            ref={caretRef}> </span>
+                    </span>
     const [caretIndex, setCaretIndex] = useState(0)
     const [caretPos, setCaretPos] = useState(0)
     const [isCaretVisible, setIsCaretVisible] = useState(false)
@@ -123,17 +127,20 @@ function InputRegion(props) {
         let char
         let isSpanBeforeRich
         let isSpanAfterRich
-
+        
         while (diff>0) {
             isSpanBeforeRich = spansClone[i-1]!=undefined && spansClone[i-1].props.rich
             isSpanAfterRich = spansClone[i+1]!=undefined && spansClone[i+1].props.rich
-
-            const [textRemoveIndex, 
-                    spansRemoveIndex, 
-                    charPos] = dir==="left"? 
-                                    [i-1, i-1, -1] : 
-                                    [i, i+1, 0]
             
+            const [textRemoveIndex, 
+                spansRemoveIndex, 
+                charPos] = dir==="left"? 
+                [i-1, i-1, -1] : 
+                [i, i+1, 0]
+                
+            const iObj = {val: i}
+            const pObj = {val: p}
+
             if (dir==="left" && isSpanBeforeRich) {
                 console.log('if1')
                 p-=3
@@ -149,41 +156,15 @@ function InputRegion(props) {
                 spansClone[spansRemoveIndex] =  createTextSpan(
                     textClone[textRemoveIndex])
                 
-                if (dir==="right" && i===0) {
-                    spansClone.splice(0, 0, createTextSpan(char,
-                        spanKey+1))
-                    textClone.splice(0, 0, char)
-                    i = 1
-                    p++
-                } else if (dir==="right") {
-                    textClone[i-1] = textClone[i-1] + char
-                    spansClone[i-1] =  createTextSpan(textClone[i-1], 
-                        spansClone[i-1].props.key)
-                    if (textClone[textClone.length-1]==="") {
-                        textClone.splice(-1, 1)
-                        spansClone.splice(-1, 1)
+                if (dir === "right") {
+                    moveRight(iObj, pObj, spansClone, textClone,
+                        char, i === 0)
+                } else if (dir === "left") {
+                    moveLeft(iObj, pObj, spansClone, textClone,
+                        char, i === spansClone.length-1)
                     }
-                    p++
-                } else if (dir==="left" && 
-                    (i===spansClone.length-1 || isSpanAfterRich)) {
-                        console.log('heeeeeeeeeey')
-                    spansClone.splice(i+1, 0,  createTextSpan(char,
-                        spanKey+1))
-                    textClone.splice(i+1, 0, char)
-                    p--
-                    console.log('left last')
-                } else if (dir==="left" && !isSpanAfterRich) {
-                    console.log('ooo')
-                    textClone[i] = char + textClone[i]
-                    spansClone[i+1] = createTextSpan(textClone[i],
-                        spansClone[i-1].props.key)
-                        if (textClone[0]==="") {
-                            textClone.splice(0, 1)
-                            spansClone.splice(0, 1)
-                        i=0
-                    }
-                    p--
-                }
+                i = iObj.val
+                p = pObj.val
             }
 
 
@@ -194,6 +175,44 @@ function InputRegion(props) {
         setCaretPos(p)
         setSpansArray(spansClone)
         setInputTextArray(textClone)
+    }
+
+    const moveLeft = (i, p, spansClone, textClone, char, addSpanAfter) => {
+        if (addSpanAfter) {
+            spansClone.splice(i.val+1, 0,  createTextSpan(char,
+                spanKey+1))
+            textClone.splice(i.val+1, 0, char)
+            p.val -= 1
+        } else {
+            textClone[i.val] = char + textClone[i.val]
+            spansClone[i.val+1] = createTextSpan(textClone[i.val],
+                                spansClone[i.val-1].props.key)
+            if (textClone[0]==="") {
+                textClone.splice(0, 1)
+                spansClone.splice(0, 1)
+            i.val = 0
+            }
+            p.val -= 1
+        }
+    }
+
+    const moveRight = (i, p, spansClone, textClone, char, addSpanBefore) => {
+        if (addSpanBefore) {
+            spansClone.splice(0, 0, createTextSpan(char,
+                spanKey+1))
+            textClone.splice(0, 0, char)
+            i.val = 1
+            p.val += 1
+        } else {
+            textClone[i.val-1] = textClone[i.val-1] + char
+            spansClone[i.val-1] =  createTextSpan(textClone[i.val-1], 
+                spansClone[i.val-1].props.key)
+            if (textClone[textClone.length-1]==="") {
+                textClone.splice(-1, 1)
+                spansClone.splice(-1, 1)
+            }
+            p.val += 1
+        }
     }
 
     const modifyStateArrays = (callback1, ...args) => {
@@ -243,6 +262,11 @@ function InputRegion(props) {
 
         const char = value.charAt(selectionStart-1)
 
+        if ((textArray[caretIndex-1] + char).endsWith(';;')) {
+            e.target.value = value.slice(0, selectionStart-1) + value.slice(selectionStart)
+            return
+        }
+
         persistCaretTemporarily(200)
 
         if (value.length > lastInputValueLen) {
@@ -278,6 +302,8 @@ function InputRegion(props) {
         moveCaret(selectionStart)
     }
 
+
+    //TODO prevent typing two symbols like ;; :: 
     return (
         <div className="input-region"
             ref={inputRegionRef}
